@@ -47,3 +47,13 @@ class TestGCSPath(BaseTests):
     @xfail_if_version("gcsfs", lt="2022.7.1", reason="requires gcsfs>=2022.7.1")
     def test_mkdir_exists_ok_true(self):
         super().test_mkdir_exists_ok_true()
+
+    def test_broken_mkdir(self, gcs_fixture):
+        _, endpoint_url = gcs_fixture
+        path = UPath("gcs://new-bucket/", endpoint_url=endpoint_url)
+        if path.exists():
+            path.rmdir()
+        path.mkdir(parents=True, exist_ok=False)
+
+        (path / "file").write_text("foo")
+        assert path.exists()
